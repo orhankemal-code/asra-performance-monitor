@@ -21,6 +21,12 @@ def get_pagespeed(url, strategy):
 
     data = response.json()
 
+    import json
+
+print("========== CATEGORIES ==========")
+print(json.dumps(data["lighthouseResult"]["categories"], indent=2))
+print("================================")
+
     categories = data["lighthouseResult"]["categories"]
     audits = data["lighthouseResult"]["audits"]
 
