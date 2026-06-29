@@ -26,13 +26,13 @@ def get_pagespeed(url, strategy):
 
     categories = data["lighthouseResult"]["categories"]
 
-    return {
-        "performance": int(categories["performance"]["score"] * 100),
-        "seo": int(categories["seo"]["score"] * 100),
-        "accessibility": int(categories["accessibility"]["score"] * 100),
-        "best_practices": int(categories["best-practices"]["score"] * 100),
-        "lcp": audits["largest-contentful-paint"]["displayValue"],
-        "cls": audits["cumulative-layout-shift"]["displayValue"],
-        "speed_index": audits["speed-index"]["displayValue"],
-        "fcp": audits["first-contentful-paint"]["displayValue"],
-    }
+return {
+    "performance": int(categories.get("performance", {}).get("score", 0) * 100),
+    "seo": int(categories.get("seo", {}).get("score", 0) * 100),
+    "accessibility": int(categories.get("accessibility", {}).get("score", 0) * 100),
+    "best_practices": int(categories.get("best-practices", {}).get("score", 0) * 100),
+    "lcp": audits.get("largest-contentful-paint", {}).get("displayValue", "-"),
+    "cls": audits.get("cumulative-layout-shift", {}).get("displayValue", "-"),
+    "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
+    "fcp": audits.get("first-contentful-paint", {}).get("displayValue", "-"),
+}
