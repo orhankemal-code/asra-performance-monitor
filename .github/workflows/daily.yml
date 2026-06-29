@@ -1,3 +1,4 @@
+```yaml
 name: Daily Performance Monitor
 
 on:
@@ -6,12 +7,14 @@ on:
   schedule:
     - cron: '0 6 * * *'
 
+permissions:
+  contents: write
+
 jobs:
   pagespeed:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -30,3 +33,18 @@ jobs:
           GTMETRIX_API_KEY: ${{ secrets.GTMETRIX_API_KEY }}
         run: |
           python src/main.py
+
+      - name: Commit report
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add reports/
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Daily performance report"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+```
