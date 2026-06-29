@@ -1,4 +1,3 @@
-```yaml
 name: Daily Performance Monitor
 
 on:
@@ -24,15 +23,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install Libraries
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run Performance Monitor
         env:
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
           GTMETRIX_API_KEY: ${{ secrets.GTMETRIX_API_KEY }}
-        run: |
-          python src/main.py
+        run: python src/main.py
 
       - name: Commit report
         run: |
@@ -47,4 +44,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-```
