@@ -1,3 +1,4 @@
+from csv_writer import save_result
 from pagespeed import get_pagespeed
 # Şimdilik GTmetrix'i devre dışı bırakıyoruz
 # from gtmetrix import run_gtmetrix
@@ -12,6 +13,7 @@ def main():
 
     mobile = get_pagespeed(URL, "mobile")
     desktop = get_pagespeed(URL, "desktop")
+    save_result(mobile, desktop)
 
     print("\nMOBILE")
     print(mobile)
