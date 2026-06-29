@@ -1,0 +1,32 @@
+name: Daily Performance Monitor
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  pagespeed:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Libraries
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Performance Monitor
+        env:
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          GTMETRIX_API_KEY: ${{ secrets.GTMETRIX_API_KEY }}
+        run: |
+          python src/main.py
