@@ -1,4 +1,5 @@
 from pagespeed import get_pagespeed
+from gtmetrix import run_gtmetrix
 
 URL = "https://www.asrapirlanta.com"
 
@@ -15,6 +16,15 @@ def main():
 
     print("\nDESKTOP")
     print(desktop)
+
+print("\nMOBILE")
+print(mobile)
+
+print("\nDESKTOP")
+print(desktop)
+
+print("\nGTMETRIX")
+print(run_gtmetrix(URL))
 
 
 if __name__ == "__main__":
