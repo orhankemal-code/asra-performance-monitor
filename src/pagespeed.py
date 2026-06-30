@@ -1,5 +1,5 @@
 import os
-import json
+import time
 import requests
 
 API_KEY = os.environ["PAGESPEED_API_KEY"]
@@ -9,34 +9,58 @@ API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 
 def get_pagespeed(url, strategy):
 
-    response = requests.get(
-        API_URL,
-        params={
-            "url": url,
-            "strategy": strategy,
-            "key": API_KEY
-        },
-        timeout=90
-    )
+    for attempt in range(3):
 
-    response.raise_for_status()
+        try:
 
-    data = response.json()
+            print(f"\n{strategy.upper()} testi başlatılıyor... ({attempt+1}/3)")
 
-    print("========== CATEGORIES ==========")
-    print(json.dumps(data["lighthouseResult"]["categories"], indent=2))
-    print("================================")
+            response = requests.get(
+                API_URL,
+                params={
+                    "url": url,
+                    "strategy": strategy,
+                    "key": API_KEY
+                },
+                timeout=120
+            )
 
-    categories = data["lighthouseResult"]["categories"]
-    audits = data["lighthouseResult"]["audits"]
+            response.raise_for_status()
 
-    return {
-        "performance": int(categories.get("performance", {}).get("score", 0) * 100),
-        "seo": int(categories.get("seo", {}).get("score", 0) * 100),
-        "accessibility": int(categories.get("accessibility", {}).get("score", 0) * 100),
-        "best_practices": int(categories.get("best-practices", {}).get("score", 0) * 100),
-        "lcp": audits.get("largest-contentful-paint", {}).get("displayValue", "-"),
-        "fcp": audits.get("first-contentful-paint", {}).get("displayValue", "-"),
-        "cls": audits.get("cumulative-layout-shift", {}).get("displayValue", "-"),
-        "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
-    }
+            data = response.json()
+
+            categories = data["lighthouseResult"]["categories"]
+            audits = data["lighthouseResult"]["audits"]
+
+            return {
+                "performance": int(categories.get("performance", {}).get("score", 0) * 100),
+                "seo": int(categories.get("seo", {}).get("score", 0) * 100),
+                "accessibility": int(categories.get("accessibility", {}).get("score", 0) * 100),
+                "best_practices": int(categories.get("best-practices", {}).get("score", 0) * 100),
+                "lcp": audits.get("largest-contentful-paint", {}).get("displayValue", "-"),
+                "fcp": audits.get("first-contentful-paint", {}).get("displayValue", "-"),
+                "cls": audits.get("cumulative-layout-shift", {}).get("displayValue", "-"),
+                "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
+            }
+
+        except requests.exceptions.RequestException as e:
+
+            print(f"\nHATA ({strategy})")
+            print(e)
+
+            if attempt < 2:
+                print("20 saniye sonra tekrar denenecek...\n")
+                time.sleep(20)
+            else:
+                print("PageSpeed API cevap vermedi.")
+
+                return {
+                    "performance": -1,
+                    "seo": -1,
+                    "accessibility": -1,
+                    "best_practices": -1,
+                    "lcp": "-",
+                    "fcp": "-",
+                    "cls": "-",
+                    "speed_index": "-"
+                }
