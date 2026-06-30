@@ -1,31 +1,31 @@
 import os
+import json
 import requests
 
-API_KEY = os.getenv("PAGESPEED_API_KEY")
+API_KEY = os.environ["PAGESPEED_API_KEY"]
 
 API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 
 
 def get_pagespeed(url, strategy):
+
     response = requests.get(
         API_URL,
         params={
             "url": url,
             "strategy": strategy,
-            "key": API_KEY,
+            "key": API_KEY
         },
-        timeout=120
+        timeout=90
     )
 
     response.raise_for_status()
 
     data = response.json()
 
-    import json
-
-print("========== CATEGORIES ==========")
-print(json.dumps(data["lighthouseResult"]["categories"], indent=2))
-print("================================")
+    print("========== CATEGORIES ==========")
+    print(json.dumps(data["lighthouseResult"]["categories"], indent=2))
+    print("================================")
 
     categories = data["lighthouseResult"]["categories"]
     audits = data["lighthouseResult"]["audits"]
