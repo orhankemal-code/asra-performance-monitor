@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import requests
 
 API_KEY = os.environ["PAGESPEED_API_KEY"]
@@ -13,7 +14,6 @@ def get_pagespeed(url, strategy):
         ("url", url),
         ("strategy", strategy),
         ("key", API_KEY),
-
         ("category", "performance"),
         ("category", "accessibility"),
         ("category", "best-practices"),
@@ -24,20 +24,32 @@ def get_pagespeed(url, strategy):
 
         try:
 
-            print(f"\n{strategy.upper()} testi ({attempt + 1}/3)")
+            print(f"\n==============================")
+            print(f"{strategy.upper()} TESTİ ({attempt+1}/3)")
+            print("==============================")
 
             response = requests.get(
                 API_URL,
                 params=params,
-                timeout=120,
+                timeout=120
             )
+
+            print("\nİSTEK URL")
+            print(response.url)
 
             response.raise_for_status()
 
             data = response.json()
 
+            print("\n========== FULL RESPONSE ==========")
+            print(json.dumps(data, indent=2))
+            print("===================================")
+
             categories = data["lighthouseResult"]["categories"]
             audits = data["lighthouseResult"]["audits"]
+
+            print("\nKategori Anahtarları:")
+            print(list(categories.keys()))
 
             return {
                 "performance": int(categories.get("performance", {}).get("score", 0) * 100),
@@ -50,15 +62,17 @@ def get_pagespeed(url, strategy):
                 "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
             }
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
 
-            print(f"\n{strategy.upper()} hatası:")
+            print(f"\nHATA ({strategy})")
             print(e)
 
             if attempt < 2:
-                print("20 saniye sonra tekrar deneniyor...\n")
+                print("\n20 saniye bekleniyor...\n")
                 time.sleep(20)
             else:
+                print("\nPageSpeed API başarısız oldu.\n")
+
                 return {
                     "performance": -1,
                     "seo": -1,
