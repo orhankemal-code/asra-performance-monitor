@@ -1,55 +1,71 @@
 import os
+import time
 import requests
 
 API_KEY = os.environ["PAGESPEED_API_KEY"]
 
-URL = "https://www.asrapirlanta.com"
+API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 
-for strategy in ["mobile", "desktop"]:
 
-    response = requests.get(
-        "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
-        params={
-            "url": URL,
-            "strategy": strategy,
-            "key": API_KEY
-        },
-        timeout=60
-    )
+def get_pagespeed(url, strategy):
 
-    response.raise_for_status()
+    params = [
+        ("url", url),
+        ("strategy", strategy),
+        ("key", API_KEY),
 
-    data = response.json()
+        ("category", "performance"),
+        ("category", "accessibility"),
+        ("category", "best-practices"),
+        ("category", "seo"),
+    ]
 
-    categories = data["lighthouseResult"]["categories"]
-    audits = data["lighthouseResult"]["audits"]
+    for attempt in range(3):
 
-    performance = int(categories["performance"]["score"] * 100)
-    seo = int(categories["seo"]["score"] * 100)
-    accessibility = int(categories["accessibility"]["score"] * 100)
-    best_practices = int(categories["best-practices"]["score"] * 100)
+        try:
 
-    lcp = audits["largest-contentful-paint"]["displayValue"]
-    cls = audits["cumulative-layout-shift"]["displayValue"]
-    speed_index = audits["speed-index"]["displayValue"]
-    fcp = audits["first-contentful-paint"]["displayValue"]
+            print(f"\n{strategy.upper()} testi ({attempt + 1}/3)")
 
-    print("=" * 60)
-    print(strategy.upper())
-    print("=" * 60)
+            response = requests.get(
+                API_URL,
+                params=params,
+                timeout=120,
+            )
 
-    print(f"Performance    : {performance}")
-    print(f"SEO            : {seo}")
-    print(f"Accessibility  : {accessibility}")
-    print(f"Best Practices : {best_practices}")
+            response.raise_for_status()
 
-    print()
+            data = response.json()
 
-    print(f"LCP            : {lcp}")
-    print(f"FCP            : {fcp}")
-    print(f"CLS            : {cls}")
-    print(f"Speed Index    : {speed_index}")
+            categories = data["lighthouseResult"]["categories"]
+            audits = data["lighthouseResult"]["audits"]
 
-    print()
-    print("Categories JSON:")
-    print(categories)
+            return {
+                "performance": int(categories.get("performance", {}).get("score", 0) * 100),
+                "seo": int(categories.get("seo", {}).get("score", 0) * 100),
+                "accessibility": int(categories.get("accessibility", {}).get("score", 0) * 100),
+                "best_practices": int(categories.get("best-practices", {}).get("score", 0) * 100),
+                "lcp": audits.get("largest-contentful-paint", {}).get("displayValue", "-"),
+                "fcp": audits.get("first-contentful-paint", {}).get("displayValue", "-"),
+                "cls": audits.get("cumulative-layout-shift", {}).get("displayValue", "-"),
+                "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
+            }
+
+        except requests.exceptions.RequestException as e:
+
+            print(f"\n{strategy.upper()} hatası:")
+            print(e)
+
+            if attempt < 2:
+                print("20 saniye sonra tekrar deneniyor...\n")
+                time.sleep(20)
+            else:
+                return {
+                    "performance": -1,
+                    "seo": -1,
+                    "accessibility": -1,
+                    "best_practices": -1,
+                    "lcp": "-",
+                    "fcp": "-",
+                    "cls": "-",
+                    "speed_index": "-",
+                }
