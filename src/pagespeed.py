@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import requests
 
 API_KEY = os.environ["PAGESPEED_API_KEY"]
@@ -29,8 +30,17 @@ def get_pagespeed(url, strategy):
 
             data = response.json()
 
+            if "lighthouseResult" not in data:
+                print("API beklenmeyen cevap döndürdü:")
+                print(json.dumps(data, indent=2))
+                raise Exception("lighthouseResult bulunamadı.")
+
             categories = data["lighthouseResult"]["categories"]
             audits = data["lighthouseResult"]["audits"]
+
+            print("\n========== CATEGORIES ==========")
+            print(json.dumps(categories, indent=2))
+            print("================================\n")
 
             return {
                 "performance": int(categories.get("performance", {}).get("score", 0) * 100),
@@ -43,7 +53,7 @@ def get_pagespeed(url, strategy):
                 "speed_index": audits.get("speed-index", {}).get("displayValue", "-"),
             }
 
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
 
             print(f"\nHATA ({strategy})")
             print(e)
@@ -52,7 +62,7 @@ def get_pagespeed(url, strategy):
                 print("20 saniye sonra tekrar denenecek...\n")
                 time.sleep(20)
             else:
-                print("PageSpeed API cevap vermedi.")
+                print("PageSpeed API cevap vermedi veya geçersiz veri döndürdü.")
 
                 return {
                     "performance": -1,
