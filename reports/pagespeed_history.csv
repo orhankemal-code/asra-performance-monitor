@@ -29,3 +29,4 @@ date,mobile_performance,desktop_performance,mobile_lcp,desktop_lcp,mobile_cls,de
 2026-07-18 10:47,60,66,11.5 s,2.4 s,0,0.081
 2026-07-19 10:59,44,59,10.4 s,2.0 s,0.001,0.08
 2026-07-20 13:26,48,61,9.1 s,1.7 s,0,0.08
+2026-07-21 12:10,53,83,5.0 s,2.3 s,0,0.08
